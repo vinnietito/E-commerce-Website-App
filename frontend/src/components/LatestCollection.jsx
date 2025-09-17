@@ -1,15 +1,36 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState  } from 'react'
 import Title from './Title'
 import { ShopContext } from '../context/ShopContext' // <-- don’t forget to import
+import ProductItem from './ProductItem';
 
 const LatestCollection = () => {
   const { products } = useContext(ShopContext);
+  const [latestProducts, setLatestProducts] = useState([]);
+
+  useEffect(()=>{
+    setLatestProducts(products.slice(0,10));
+  },[])
 
   return (
     <div className='my-10'>
       <div className='text-center py-8 text-3xl'>
         <Title text1={'LATEST'} text2={'COLLECTIONS'} />
+        <p className='w-3/4 m-auto text-xs sm:text-sm md:text-base text-gray-600'>
+        Welcome to our store! We are dedicated to bringing you the latest arrivals and best-selling products, carefully selected to match your style and needs. 
+        Discover unique collections, enjoy affordable prices, and shop with confidence knowing quality is our priority.
+        </p>
       </div>
+
+      {/* Rendering Products */}
+        <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols4 lg:grid-cols-5 gap-4 gap-y-6'>
+            {
+                latestProducts.map((item,index)=>(
+                    <ProductItem key={index} id={item._id} image={item.image} name={item.name} price={item.price}/>
+                ))
+            }
+        </div> 
+
+
     </div>
   )
 }
