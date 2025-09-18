@@ -10,7 +10,7 @@ const Footer = () => {
             <p className='w-full md:w-2/3 text-gray-600'>
                 Your one-stop shop for quality fashion and lifestyle products. We bring you 
                 the latest collections at affordable prices.<br/>
-                Vin Thrift Shop © 2025 – All rights reserved. Crafted with love for our customers worldwide.
+                
             </p>
         </div>
         <div>
@@ -27,9 +27,12 @@ const Footer = () => {
             <ul className='flex flex-col gap-1 text-gray-600'>
                 <li>+254792769123</li>
                 <li>vinthriftstore@gmail.com</li>
-
             </ul>
         </div>
+      </div>
+      <div >
+        <hr />
+        <p className='py-5 text-sm text-center'>Vin Thrift Shop © 2025 – All rights reserved. Crafted with love for our customers worldwide.</p>
       </div>
     </div>
   )
