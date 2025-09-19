@@ -31,13 +31,24 @@ const Collection = () => {
     }
   }
 
+  const applyFilter = () => {
+    let productsCopy = products.slice();
+
+    if (category.length > 0) {
+      productsCopy = productsCopy.filter(item => category.includes(item.category));
+      
+    }
+    setFilterProducts(productsCopy)
+  }
+
   useEffect(()=>{
     setFilterProducts(products);
   },[])
 
   useEffect(()=>{
-    console.log(subCategory);
-  },[subCategory])
+    applyFilter();
+  },[category,subCategory])
+
 
   return (
     <div className='flex flex-col sm:flex-row gap-1 sm:gap-10 border-t'>
