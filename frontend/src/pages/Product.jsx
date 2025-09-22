@@ -71,8 +71,25 @@ const Product = () => {
             <p>100% Original Product.</p>
             <p>Cash on delivery is available on this product.</p>
             <p>Easy return and exchange policy within 7 days.</p>
-
           </div>
+        </div>
+      </div>
+      {/* --------------Description & Review Section------------- */}
+      <div className='mt-20'>
+        <div className='flex'>
+          <b className='border px-5 py-3 text-sm'>Description</b>
+          <p className='border px-5 py-3 text-sm'>Reviews (122)</p>
+        </div>
+        <div className='flex flex-col gap-4 border px-6 py-6 text-sm text-gray-500'>
+          <p>Our e-commerce platform brings together a wide variety of high-quality 
+              products, giving you the freedom to shop from anywhere at any time. 
+              Each item is carefully selected to meet your needs and provide you with 
+              the best value for your money.</p>
+          <p>We are committed to delivering not only great products but also a 
+              smooth and enjoyable shopping experience. With secure checkout, fast 
+              delivery, and reliable customer support, you can shop with confidence 
+              and convenience.</p>
+
         </div>
       </div>
     </div>
