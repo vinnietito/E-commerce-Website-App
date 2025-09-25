@@ -1,10 +1,13 @@
 
 // Route for user login
-const loginUser = async () => {
+const loginUser = async (req,res) => {
 
 
 
 }
 
 // Route for user Registration
-const registerUser = 
+const registerUser = async (req,res) => {
+
+
+}
