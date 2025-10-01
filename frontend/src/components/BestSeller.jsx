@@ -4,13 +4,14 @@ import Title from './Title'
 import ProductItem from './ProductItem'
 
 const BestSeller = () => {
+
   const { products } = useContext(ShopContext)
-  const [bestSeller, setBestSeller] = useState([])
+  const [bestSeller, setBestSeller] = useState([]);
 
   useEffect(() => {
-    if (!products || !products.length) return
+    //if (!products || !products.length) return
     // NOTE: your data uses `bestseller` (lowercase) — use that
-    const bestProduct = products.filter((item) => item.bestseller === true)
+    const bestProduct = products.filter((item) => (item.bestseller));
     setBestSeller(bestProduct.slice(0, 5))
   }, [products]) // run whenever products changes
 
