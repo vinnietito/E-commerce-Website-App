@@ -5,7 +5,7 @@ import axios from 'axios'
 const Login = () => {
 
   const [currentState, setCurrentState] = useState('SignUp')
-  const {token, setToken, navigate, backendURL} = useContext(ShopContext)   // ✅ removed extra }
+  const {token, setToken, navigate, backendURL} = useContext(ShopContext)
 
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
@@ -15,9 +15,12 @@ const Login = () => {
       event.preventDefault();
       try {
         if (currentState === 'Sign Up') {
+
           const response = await axios.post(backendURL + '/api/user/register', {name, email, password})
           console.log(response.data);
+          
         }
+
       } catch (error) {
         
       }
