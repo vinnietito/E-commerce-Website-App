@@ -13,16 +13,18 @@ const Login = () => {
 
   const onSubmitHandler = async (event) => {
       event.preventDefault();
+      console.log("✅ Form submitted", { currentState, name, email, password }); // debug
+
       try {
         if (currentState === 'Sign Up') {
-
-          const response = await axios.post(backendURL + '/api/user/register', {name, email, password})
-          console.log(response.data);
-          
+          const response = await axios.post(
+            backendURL + '/api/user/register', 
+            { name, email, password }
+          )
+          console.log("✅ API response:", response.data);
         }
-
       } catch (error) {
-        
+        console.error("❌ API error:", error);
       }
   }
 
