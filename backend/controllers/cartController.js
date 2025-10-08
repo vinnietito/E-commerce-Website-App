@@ -12,9 +12,24 @@ const addToCart = async (req, res) => {
         const userData = await userModel.findById(userId)
         let cartData = await userData.cartData;
 
-        if
+        if(cartData[itemId]) {
+            if(cartData[itemId][size]) {
+                cartData[itemId][size] += 1
+            } else {
+                cartData[itemId][size] = 1
+            }
+        } else {
+            cartData[itemId] = {}
+            cartData[itemId][size] = 1
+        }
+
+        await userModel.findByIdAndUpdate(userId, {cartData})
+        res.json({success:true, message:"Item added to cart!"})
 
     } catch (error) {
+        console.log(error)
+        res.json({success: false, message:error.message})
+        
         
     }
 
