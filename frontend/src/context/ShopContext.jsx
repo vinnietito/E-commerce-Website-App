@@ -75,7 +75,9 @@ const ShopContextProvider = (props) => {
 
         cartData[itemId][size] = quantity;
 
-        setCartItems(cartData);
+        setCartItems(cartData)
+
+        if(token)
     }
 
     const getCartAmount = () => {
