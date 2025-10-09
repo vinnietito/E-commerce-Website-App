@@ -30,7 +30,9 @@ const userOrders = async (req, res) => {
     
 }
 
-// Update Order status
+// Update Order status from Admin  Panel
 const updateStatus = async (req, res) => {
     
 }
+
+export { placeOrder, placeOrderStripe, placeOrderRazorpay, placeOrderMpesa, allOrders, userOrders, updateStatus }
