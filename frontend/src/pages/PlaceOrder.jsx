@@ -7,7 +7,7 @@ import { ShopContext } from '../context/ShopContext'
 const PlaceOrder = () => {
 
   const [method, setMethod] = useState('cod');
-
+  const {navigate,backendURL, token, cartItems, setCartItems, getCartAmount, delivery_fee, products} = useContext(ShopContext);
   const [formData, setFormData] = useState({
     firstName:'',
     lastName:'',
@@ -23,14 +23,40 @@ const PlaceOrder = () => {
   const onChangeHandler = (event) => {
     const name = event.target.name
     const value = event.target.value
-
     setFormData(data => ({...data,[name]:value}))
   }
 
-  const {navigate} = useContext(ShopContext);
+  const onSubmitHandler = async (event) => {
+    event.preventDefault()
+    try {
+      
+      let orderItems = []
+
+      for(const items in cartItems) {
+        for(const item in cartItems) {
+          if (cartItems[items][item] > 0) {
+            const itemInfo = structuredClone(products.find(product => product._id === items))
+            if (itemInfo) {
+              itemInfo.size = item
+              itemInfo.quantity = cartItems[items][item]
+              orderItems.push(itemInfo)
+            }
+            
+          }
+        }
+      }
+
+      console.log(orderItems);
+      
+
+    } catch (error) {
+      
+    }
+  }
+
 
   return (
-    <form className='flex flex-col sm:flex-row justify-between gap-4 pt-5 sm:pt-14 min-h-[80vh] border-t'>
+    <form onSubmit={onSubmitHandler} className='flex flex-col sm:flex-row justify-between gap-4 pt-5 sm:pt-14 min-h-[80vh] border-t'>
       {/* ---------------Left Side----------- */}
       <div className='flex flex-col gap-4 w-full sm:max-w-[480px]'>
 
