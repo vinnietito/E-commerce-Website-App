@@ -16,6 +16,6 @@ orderRouter.post('/razorpay', authUser, placeOrder)
 orderRouter.post('/mpesa', authUser, placeOrder)
 
 // User Feature
-orderRouter.post('/useorders', authUser, userOrders)
+orderRouter.post('/userorders', authUser, userOrders)
 
 export default orderRouter
