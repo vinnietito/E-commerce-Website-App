@@ -53,6 +53,10 @@ const Orders = ({token}) => {
                 })}
               </div>
               <p>{order.address.firstName + " " + order.address.lastName}</p>
+              <div>
+                <p>{order.address.street + " ," }</p>
+                <p>{order.address.city + " ," + order.address.state + "," }</p>
+              </div>
             </div>
           ))
         }
