@@ -5,11 +5,13 @@ import CartTotal from '../components/CartTotal'
 import { assets } from '../assets/assets'
 import { ShopContext } from '../context/ShopContext'
 import { toast } from 'react-toastify'
+import { useNavigate } from 'react-router-dom'
+
 
 const PlaceOrder = () => {
-
+  const navigate = useNavigate();
   const [method, setMethod] = useState('cod');
-  const {navigate,backendURL, token, cartItems, setCartItems, getCartAmount, delivery_fee, products} = useContext(ShopContext);
+  const {backendURL, token, cartItems, setCartItems, getCartAmount, delivery_fee, products} = useContext(ShopContext);
   const [formData, setFormData] = useState({
     firstName:'',
     lastName:'',
