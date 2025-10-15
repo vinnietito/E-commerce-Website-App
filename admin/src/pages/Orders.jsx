@@ -20,7 +20,7 @@ const Orders = ({token}) => {
 
       const response = await axios.post(backendURL + '/api/order/list', {}, { headers: { token }})
       if (response.data.success) {
-        setOrders(response.data.Orders)
+        setOrders(response.data.orders)
       } else {
         toast.error(response.data.message)
       }
@@ -45,11 +45,14 @@ const Orders = ({token}) => {
               <img src={assets.parcel_icon} alt="" />
               <div>
                 {order.items.map((item,index) => {
-                  if (index === order.items.length) {
+                  if (index === order.items.length - 1) {
                     return <p key={index}> { item.name } X {item.quantity} <span> {item.size}</span></p>
+                  } else {
+                    return <p key={index}> { item.name } X {item.quantity} <span> {item.size}</span> ,</p>
                   }
                 })}
               </div>
+              <p>{order.address.firstName + " " + order.address.lastName}</p>
             </div>
           ))
         }
