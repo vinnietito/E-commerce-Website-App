@@ -4,7 +4,7 @@ import userModel from "../models/userModel.js";
 import Stripe from 'stripe'
 
 // Global Varibles
-const currency = 'ksh'
+const currency = 'kes'
 const deliveryCharge = 350
 
 // Gateway initialize
