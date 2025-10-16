@@ -1,4 +1,5 @@
 // import { currency } from "../../admin/src/App.jsx";
+import { response } from "express";
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
 import Stripe from 'stripe'
@@ -100,6 +101,27 @@ const placeOrderStripe = async (req, res) => {
     
 }
 
+// Verify Stripe
+const verifyStripe = async (req, res) => {
+
+    const { orderId, success, userId } = req.body
+
+    try {
+        if (success === "true") {
+            await orderModel.findByIdAndUpdate(orderId, {payment:true});
+            await userModel.findByIdAndUpdate(userId, {cartData: {}})
+            re.json({success: true});
+        } else {
+            await orderModel.findByIdAndDelete(orderId)
+            res.json({success:false})
+        }
+    } catch (error) {
+        console.log(error)
+        res.json({success:false, message:error.message})
+    }
+
+}
+
 // Placing orders using Razor Pay Method
 const placeOrderRazorpay = async (req, res) => {
     
@@ -154,4 +176,4 @@ const updateStatus = async (req, res) => {
     }
 }
 
-export { placeOrder, placeOrderStripe, placeOrderRazorpay, placeOrderMpesa, allOrders, userOrders, updateStatus }
+export { verifyStripe, placeOrder, placeOrderStripe, placeOrderRazorpay, placeOrderMpesa, allOrders, userOrders, updateStatus }
