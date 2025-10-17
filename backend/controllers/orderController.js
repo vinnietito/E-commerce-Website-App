@@ -131,67 +131,88 @@ const placeOrderRazorpay = async (req, res) => {
 
 // Placing orders using Mpesa Method
 const placeOrderMpesa = async (req, res) => {
-  try {
-    console.log('Incoming Body:', req.body); // 👈 check what frontend sends
+    try {
+        console.log('Incoming Body:', req.body);
 
-    const { userId, items, amount, address, phoneNumber } = req.body;
+        const { userId, items, amount, address, phoneNumber } = req.body;
 
-    if (!phoneNumber || !amount) {
-      return res.status(400).json({ success: false, message: "Missing phoneNumber or amount" });
+        if (!phoneNumber || !amount) {
+            return res.status(400).json({ success: false, message: "Missing phoneNumber or amount" });
+        }
+
+        // 1️⃣ Save order first
+        const orderData = {
+            userId,
+            items,
+            address,
+            amount,
+            paymentMethod: "Mpesa",
+            payment: false,
+            date: Date.now()
+        };
+
+        const newOrder = new orderModel(orderData);
+        await newOrder.save();
+
+        // 2️⃣ Get access token
+        const tokenResponse = await axios.get(
+            "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
+            {
+                auth: {
+                    username: process.env.MPESA_CONSUMER_KEY,
+                    password: process.env.MPESA_CONSUMER_SECRET
+                }
+            }
+        );
+
+        const accessToken = tokenResponse.data.access_token;
+        console.log("✅ Access Token:", accessToken);
+
+        const timestamp = new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14);
+
+        const password = Buffer.from(
+            `${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`
+        ).toString("base64");
+
+        const stkPushData = {
+            BusinessShortCode: process.env.MPESA_SHORTCODE,
+            Password: password,
+            Timestamp: timestamp,
+            TransactionType: "CustomerPayBillOnline",
+            Amount: amount,
+            PartyA: phoneNumber,
+            PartyB: process.env.MPESA_SHORTCODE,
+            PhoneNumber: phoneNumber,
+            CallBackURL: `${process.env.MPESA_CALLBACK_URL}`,
+            AccountReference: `Order${newOrder._id}`, // ✅ So we can identify it later
+            TransactionDesc: "Payment for order"
+        };
+
+        const stkResponse = await axios.post(
+            "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
+            stkPushData,
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+
+        console.log("✅ MPESA RESPONSE:", stkResponse.data);
+
+        res.json({
+            success: true,
+            message: "STK push initiated",
+            data: stkResponse.data,
+            orderId: newOrder._id
+        });
+    } catch (error) {
+        console.log("❌ MPESA ERROR:", error.response?.data || error.message);
+        res.status(400).json({ success: false, message: error.response?.data || error.message });
     }
-
-    const tokenResponse = await axios.get(
-      "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
-      {
-        auth: {
-          username: process.env.MPESA_CONSUMER_KEY,
-          password: process.env.MPESA_CONSUMER_SECRET
-        }
-      }
-    );
-
-    const accessToken = tokenResponse.data.access_token;
-    console.log("✅ Access Token:", accessToken);
-
-    const timestamp = new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14);
-
-    const password = Buffer.from(
-      `${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`
-    ).toString("base64");
-
-    const stkPushData = {
-      BusinessShortCode: process.env.MPESA_SHORTCODE,
-      Password: password,
-      Timestamp: timestamp,
-      TransactionType: "CustomerPayBillOnline",
-      Amount: amount,
-      PartyA: phoneNumber,
-      PartyB: process.env.MPESA_SHORTCODE,
-      PhoneNumber: phoneNumber,
-      CallBackURL: `${process.env.MPESA_CALLBACK_URL}`,
-      AccountReference: "Order Payment",
-      TransactionDesc: "Payment for order"
-    };
-
-    const stkResponse = await axios.post(
-      "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
-      stkPushData,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json"
-        }
-      }
-    );
-
-    console.log("✅ MPESA RESPONSE:", stkResponse.data);
-
-    res.json({ success: true, data: stkResponse.data });
-  } catch (error) {
-    console.log("❌ MPESA ERROR:", error.response?.data || error.message);
-    res.status(400).json({ success: false, message: error.response?.data || error.message });
-  }
 };
+
 
 // Verify Mpesa
 const verifyMpesa = async (req, res) => {
