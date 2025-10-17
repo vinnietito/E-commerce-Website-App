@@ -112,7 +112,7 @@ const verifyStripe = async (req, res) => {
         if (success === "true") {
             await orderModel.findByIdAndUpdate(orderId, { payment: true });
             await userModel.findByIdAndUpdate(userId, { cartData: {} })
-            re.json({ success: true });
+            res.json({ success: true });
         } else {
             await orderModel.findByIdAndDelete(orderId)
             res.json({ success: false })
@@ -132,86 +132,80 @@ const placeOrderRazorpay = async (req, res) => {
 // Placing orders using Mpesa Method
 const placeOrderMpesa = async (req, res) => {
     try {
-        console.log('Incoming Body:', req.body);
+        console.log("Incoming Body:", req.body);
 
-        const { userId, items, amount, address, phoneNumber } = req.body;
+        const { userId, items, amount, address, phone } = req.body;
 
-        if (!phoneNumber || !amount) {
-            return res.status(400).json({ success: false, message: "Missing phoneNumber or amount" });
+        if (!phone || !amount) {
+            return res.status(400).json({ success: false, message: "Missing phone or amount" });
         }
 
-        // 1️⃣ Save order first
-        const orderData = {
-            userId,
-            items,
-            address,
-            amount,
-            paymentMethod: "Mpesa",
-            payment: false,
-            date: Date.now()
-        };
+        // ✅ Convert 07XXXXXXXX → 2547XXXXXXXX
+        let formattedPhone = phone;
+        if (formattedPhone.startsWith("0")) {
+            formattedPhone = "254" + formattedPhone.substring(1);
+        }
 
-        const newOrder = new orderModel(orderData);
-        await newOrder.save();
-
-        // 2️⃣ Get access token
+        // 🔑 Get M-PESA Access Token
         const tokenResponse = await axios.get(
             "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
             {
                 auth: {
                     username: process.env.MPESA_CONSUMER_KEY,
-                    password: process.env.MPESA_CONSUMER_SECRET
-                }
+                    password: process.env.MPESA_CONSUMER_SECRET,
+                },
             }
         );
 
         const accessToken = tokenResponse.data.access_token;
         console.log("✅ Access Token:", accessToken);
 
-        const timestamp = new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14);
+        // 🕒 Timestamp (YYYYMMDDHHMMSS)
+        const timestamp = new Date()
+            .toISOString()
+            .replace(/[-:TZ.]/g, "")
+            .slice(0, 14);
 
+        // 🔐 Password = Base64(SHORTCODE + PASSKEY + TIMESTAMP)
         const password = Buffer.from(
             `${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`
         ).toString("base64");
 
+        // 🧾 STK Push Request Body
         const stkPushData = {
             BusinessShortCode: process.env.MPESA_SHORTCODE,
             Password: password,
             Timestamp: timestamp,
             TransactionType: "CustomerPayBillOnline",
             Amount: amount,
-            PartyA: phoneNumber,
+            PartyA: formattedPhone,
             PartyB: process.env.MPESA_SHORTCODE,
-            PhoneNumber: phoneNumber,
-            CallBackURL: `${process.env.MPESA_CALLBACK_URL}`,
-            AccountReference: `Order${newOrder._id}`, // ✅ So we can identify it later
-            TransactionDesc: "Payment for order"
+            PhoneNumber: formattedPhone,
+            CallBackURL: process.env.MPESA_CALLBACK_URL,
+            AccountReference: "TeleMed Order",
+            TransactionDesc: "Payment for TeleMed order",
         };
 
+        // 📡 Send STK Push
         const stkResponse = await axios.post(
             "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
             stkPushData,
             {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
-                    "Content-Type": "application/json"
-                }
+                    "Content-Type": "application/json",
+                },
             }
         );
 
         console.log("✅ MPESA RESPONSE:", stkResponse.data);
-
-        res.json({
-            success: true,
-            message: "STK push initiated",
-            data: stkResponse.data,
-            orderId: newOrder._id
-        });
+        res.json({ success: true, data: stkResponse.data });
     } catch (error) {
-        console.log("❌ MPESA ERROR:", error.response?.data || error.message);
+        console.error("❌ MPESA ERROR:", error.response?.data || error.message);
         res.status(400).json({ success: false, message: error.response?.data || error.message });
     }
 };
+
 
 
 // Verify Mpesa
