@@ -131,66 +131,66 @@ const placeOrderRazorpay = async (req, res) => {
 
 // Placing orders using Mpesa Method
 const placeOrderMpesa = async (req, res) => {
-    try {
-        const { userId, items, amount, address, phone } = req.body;
+  try {
+    console.log('Incoming Body:', req.body); // 👈 check what frontend sends
 
-        // 1️⃣ Save order with "pending payment"
-        const orderData = {
-            userId,
-            items,
-            address,
-            amount,
-            paymentMethod: "Mpesa",
-            payment: false,
-            date: Date.now(),
-        };
+    const { userId, items, amount, address, phoneNumber } = req.body;
 
-        const newOrder = new orderModel(orderData);
-        await newOrder.save();
-
-        // 2️⃣ Generate access token
-        const accessToken = await getMpesaAccessToken();
-
-        // 3️⃣ Prepare payment details
-        const timestamp = new Date()
-            .toISOString()
-            .replace(/[^0-9]/g, "")
-            .slice(0, 14);
-        const password = Buffer.from(
-            process.env.MPESA_SHORTCODE + process.env.MPESA_PASSKEY + timestamp
-        ).toString("base64");
-
-        const payload = {
-            BusinessShortCode: process.env.MPESA_SHORTCODE,
-            Password: password,
-            Timestamp: timestamp,
-            TransactionType: "CustomerPayBillOnline",
-            Amount: Math.round(amount),
-            PartyA: phone, // customer phone e.g. 2547XXXXXXXX
-            PartyB: process.env.MPESA_SHORTCODE,
-            PhoneNumber: phone,
-            CallBackURL: process.env.MPESA_CALLBACK_URL,
-            AccountReference: `Order${newOrder._id}`,
-            TransactionDesc: "TeleMed E-commerce Payment",
-        };
-
-        // 4️⃣ Send STK Push
-        const response = await axios.post(
-            "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
-            payload,
-            { headers: { Authorization: `Bearer ${accessToken}` } }
-        );
-
-        res.json({
-            success: true,
-            message: "STK Push sent. Please check your phone.",
-            CheckoutRequestID: response.data.CheckoutRequestID,
-            OrderId: newOrder._id,
-        });
-    } catch (error) {
-        console.log(error.response?.data || error.message);
-        res.json({ success: false, message: error.message });
+    if (!phoneNumber || !amount) {
+      return res.status(400).json({ success: false, message: "Missing phoneNumber or amount" });
     }
+
+    const tokenResponse = await axios.get(
+      "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
+      {
+        auth: {
+          username: process.env.MPESA_CONSUMER_KEY,
+          password: process.env.MPESA_CONSUMER_SECRET
+        }
+      }
+    );
+
+    const accessToken = tokenResponse.data.access_token;
+    console.log("✅ Access Token:", accessToken);
+
+    const timestamp = new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14);
+
+    const password = Buffer.from(
+      `${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`
+    ).toString("base64");
+
+    const stkPushData = {
+      BusinessShortCode: process.env.MPESA_SHORTCODE,
+      Password: password,
+      Timestamp: timestamp,
+      TransactionType: "CustomerPayBillOnline",
+      Amount: amount,
+      PartyA: phoneNumber,
+      PartyB: process.env.MPESA_SHORTCODE,
+      PhoneNumber: phoneNumber,
+      CallBackURL: `${process.env.MPESA_CALLBACK_URL}`,
+      AccountReference: "Order Payment",
+      TransactionDesc: "Payment for order"
+    };
+
+    const stkResponse = await axios.post(
+      "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
+      stkPushData,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    console.log("✅ MPESA RESPONSE:", stkResponse.data);
+
+    res.json({ success: true, data: stkResponse.data });
+  } catch (error) {
+    console.log("❌ MPESA ERROR:", error.response?.data || error.message);
+    res.status(400).json({ success: false, message: error.response?.data || error.message });
+  }
 };
 
 // Verify Mpesa
