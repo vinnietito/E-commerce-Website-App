@@ -193,6 +193,32 @@ const placeOrderMpesa = async (req, res) => {
     }
 };
 
+// Verify Mpesa
+const verifyMpesa = async (req, res) => {
+    try {
+        const { Body } = req.body;
+        const result = Body.stkCallback;
+
+        const checkoutId = result.CheckoutRequestID;
+
+        if (result.ResultCode === 0) {
+            // Payment successful
+            const orderRef = result.CallbackMetadata.Item.find(
+                i => i.Name === "AccountReference"
+            )?.Value.replace("Order", "");
+
+            await orderModel.findByIdAndUpdate(orderRef, { payment: true });
+            res.json({ success: true, message: "Payment confirmed" });
+        } else {
+            console.log("Payment failed:", result.ResultDesc);
+            res.json({ success: false, message: result.ResultDesc });
+        }
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
 // All orders Data for Admin Panel
 const allOrders = async (req, res) => {
     try {
@@ -237,4 +263,6 @@ const updateStatus = async (req, res) => {
     }
 }
 
-export { verifyStripe, placeOrder, placeOrderStripe, placeOrderRazorpay, placeOrderMpesa, allOrders, userOrders, updateStatus }
+
+
+export { verifyStripe, placeOrder, placeOrderStripe, placeOrderRazorpay, placeOrderMpesa, allOrders, userOrders, updateStatus, verifyMpesa }
