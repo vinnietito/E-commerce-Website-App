@@ -22,4 +22,12 @@ orderRouter.post('/userorders', authUser, userOrders)
 orderRouter.post('/verifyStripe', authUser, verifyStripe)
 orderRouter.post('/verifyMpesa', authUser, verifyMpesa )
 
+
+// M-Pesa Callback
+orderRouter.post('/mpesa/callback', (req, res) => {
+  console.log('✅ M-Pesa Callback received:', req.body);
+  res.status(200).send('Callback received successfully');
+});
+
+
 export default orderRouter
