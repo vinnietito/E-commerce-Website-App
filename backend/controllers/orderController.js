@@ -184,7 +184,7 @@ const placeOrderMpesa = async (req, res) => {
             CallBackURL: process.env.MPESA_CALLBACK_URL,
             AccountReference: `Order${Date.now()}`,
             TransactionDesc: "Payment for E-commerce order",
-,
+
         };
 
         // 📡 Send STK Push
