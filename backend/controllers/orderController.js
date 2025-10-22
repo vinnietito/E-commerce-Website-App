@@ -182,8 +182,8 @@ const placeOrderMpesa = async (req, res) => {
             PartyB: process.env.MPESA_SHORTCODE,
             PhoneNumber: formattedPhone,
             CallBackURL: process.env.MPESA_CALLBACK_URL,
-            AccountReference: `Order${Date.now()}`,
-            TransactionDesc: "Payment for E-commerce order",
+            AccountReference: "VinThriftShop Order",
+            TransactionDesc: "Payment for VinThriftShop order",
 
         };
 
