@@ -17,7 +17,7 @@ const Login = () => {
       //console.log("✅ Form submitted", { currentState, name, email, password }); // debug
 
       try {
-        if (currentState === 'SignUp') {
+        if (currentState === 'Sign Up') {
 
           const response = await axios.post(backendURL + '/api/user/register', { name, email, password })
           if (response.data.success) {
