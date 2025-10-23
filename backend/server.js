@@ -7,26 +7,31 @@ import userRouter from './routes/userRoute.js'
 import productRouter from './routes/productRoute.js'
 import cartRouter from './routes/cartRoute.js'
 import orderRouter from './routes/orderRoute.js'
+import serverless from 'serverless-http'
 
-// App Config
+// Initialize App
 const app = express()
-const port = process.env.PORT || 4000
+
+// Connect to services
 connectDB()
 connectCloudinary()
 
-// Middlewares
+// Middleware
 app.use(express.json())
 app.use(cors())
 
-// API Endpoints
-app.use('/api/user',userRouter)
+// Routes
+app.use('/api/user', userRouter)
 app.use('/api/product', productRouter)
 app.use('/api/cart', cartRouter)
 app.use('/api/order', orderRouter)
 
+// Root route
 app.get('/', (req, res) => {
-  res.status(200).send("API Working!")
+  res.status(200).send("API Working on Vercel 🚀")
 })
 
-// Listener
-app.listen(port, () => console.log(`Server started on PORT:${port}`))
+// ❌ Remove app.listen()
+// ✅ Instead export a serverless handler
+export const handler = serverless(app)
+export default app
