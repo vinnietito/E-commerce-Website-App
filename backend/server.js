@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
-import "dotenv/config.js";
+import "dotenv/config";
+import serverless from "serverless-http";
 import connectDB from "./config/mongodb.js";
 import connectCloudinary from "./config/cloudinary.js";
 import userRouter from "./routes/userRoute.js";
@@ -8,27 +9,42 @@ import productRouter from "./routes/productRoute.js";
 import cartRouter from "./routes/cartRoute.js";
 import orderRouter from "./routes/orderRoute.js";
 
-// Connect to DB and Cloudinary once
+const app = express();
+const port = process.env.PORT || 4000;
+
+// 🟢 Connect MongoDB & Cloudinary
 connectDB();
 connectCloudinary();
 
-// Initialize app
-const app = express();
-
-// Middlewares
+// 🟢 Middleware
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", // your React dev server
+      "https://vinthriftshop-frontend.vercel.app", // replace with your actual frontend domain
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
-// API Routes
+// 🟢 Routes
 app.use("/api/user", userRouter);
 app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 
-// Root endpoint
 app.get("/", (req, res) => {
-  res.status(200).send("API Working!");
+  res.status(200).send("✅ API is working perfectly!");
 });
 
-// Export the app (no app.listen!)
+// ✅ Export for Vercel serverless
+export const handler = serverless(app);
+
+// ✅ Run locally
+if (process.env.NODE_ENV !== "production") {
+  app.listen(port, () => console.log(`🚀 Server running on port ${port}`));
+}
+
 export default app;
