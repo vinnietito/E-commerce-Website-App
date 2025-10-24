@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { assets } from '../assets/assets'
-import e from 'cors'
 import axios from 'axios'
 import { backendURL } from '../App'
 import { toast } from 'react-toastify'
